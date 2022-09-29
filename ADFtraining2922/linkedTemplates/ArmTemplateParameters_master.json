@@ -8,6 +8,9 @@
 		"LS_BLOB_TRAINING229_connectionString": {
 			"value": ""
 		},
+		"LS_SQL_EDW_connectionString": {
+			"value": ""
+		},
 		"containerUri": {
 			"value": ""
 		},
