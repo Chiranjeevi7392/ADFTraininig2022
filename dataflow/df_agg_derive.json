@@ -19,6 +19,17 @@
 						"type": "DatasetReference"
 					},
 					"name": "derive"
+				},
+				{
+					"dataset": {
+						"referenceName": "moviesop",
+						"type": "DatasetReference"
+					},
+					"name": "agg",
+					"rejectedDataLinkedService": {
+						"referenceName": "LS_BLOB_TRAINING229",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"transformations": [
@@ -47,7 +58,13 @@
 				"     partitionFileNames:['derive.csv'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> derive"
+				"     partitionBy('hash', 1)) ~> derive",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['agg.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> agg"
 			]
 		}
 	}
