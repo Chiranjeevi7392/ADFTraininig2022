@@ -24,6 +24,9 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -37,6 +40,8 @@
 				"     ignoreNoFilesFound: false) ~> moviesv1",
 				"moviesv1 derive(title = toString(left(title,length(title)-6)),",
 				"          year = toInteger(trim(right(title,6),'()'))) ~> derivedColumn1",
+				"derivedColumn1 aggregate(groupBy(year),",
+				"     moviescount = count(year)) ~> aggregate1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     partitionFileNames:['derive.csv'],",
