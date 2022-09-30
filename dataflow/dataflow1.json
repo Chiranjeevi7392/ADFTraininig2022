@@ -12,6 +12,10 @@
 					"name": "movies"
 				},
 				{
+					"dataset": {
+						"referenceName": "MoviesDB",
+						"type": "DatasetReference"
+					},
 					"name": "moviesDB"
 				}
 			],
@@ -26,8 +30,17 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> movies",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> moviesDB"
+				"source(output(",
+				"          movie as string,",
+				"          title as string,",
+				"          genres as string,",
+				"          year as string,",
+				"          Rating as string,",
+				"          RottenTomato as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> moviesDB"
 			]
 		}
 	}
