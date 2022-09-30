@@ -1,0 +1,22 @@
+{
+	"name": "moviesop",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_BLOB_TRAINING229",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "output"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
