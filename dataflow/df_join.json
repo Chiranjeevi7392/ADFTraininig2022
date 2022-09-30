@@ -19,13 +19,24 @@
 					"name": "moviesdb"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "moviesop",
+						"type": "DatasetReference"
+					},
+					"name": "moviesoutput"
+				}
+			],
 			"transformations": [
 				{
 					"name": "moviesclean"
 				},
 				{
 					"name": "joinmoviesdb"
+				},
+				{
+					"name": "moviesdata2"
 				}
 			],
 			"scriptLines": [
@@ -53,7 +64,24 @@
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinmoviesdb"
+				"     broadcast: 'auto')~> joinmoviesdb",
+				"joinmoviesdb select(mapColumn(",
+				"          movieId,",
+				"          title = movies@title,",
+				"          genres = movies@genres,",
+				"          movie,",
+				"          genres = moviesdb@genres,",
+				"          year,",
+				"          Rating,",
+				"          RottenTomato",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> moviesdata2",
+				"moviesdata2 sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> moviesoutput"
 			]
 		}
 	}
