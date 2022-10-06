@@ -98,6 +98,54 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipelineagg')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_agg_derive",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"moviesv1": {},
+									"derive": {},
+									"agg": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 16,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_agg_derive')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipelinejoinmovies')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -142,7 +190,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_join')]"
+				"[concat(variables('factoryId'), '/dataflows/df_join')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -436,108 +485,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/df_join')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "MoviesDS",
-								"type": "DatasetReference"
-							},
-							"name": "movies"
-						},
-						{
-							"dataset": {
-								"referenceName": "moviesdbDS",
-								"type": "DatasetReference"
-							},
-							"name": "moviesdb"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "moviesop",
-								"type": "DatasetReference"
-							},
-							"name": "moviesoutput"
-						}
-					],
-					"transformations": [
-						{
-							"name": "moviesclean"
-						},
-						{
-							"name": "joinmoviesdb"
-						},
-						{
-							"name": "moviesdata2"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          movieId as string,",
-						"          title as string,",
-						"          genres as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> movies",
-						"source(output(",
-						"          movie as string,",
-						"          title as string,",
-						"          genres as string,",
-						"          year as string,",
-						"          Rating as string,",
-						"          RottenTomato as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> moviesdb",
-						"movies derive(titlename = toString(left(title,length(title)-6))) ~> moviesclean",
-						"moviesclean, moviesdb join(titlename == moviesdb@title,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinmoviesdb",
-						"joinmoviesdb select(mapColumn(",
-						"          movieId,",
-						"          title = movies@title,",
-						"          genres = movies@genres,",
-						"          movie,",
-						"          genres = moviesdb@genres,",
-						"          year,",
-						"          Rating,",
-						"          RottenTomato",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> moviesdata2",
-						"moviesdata2 sink(allowSchemaDrift: true,",
-						"     validateSchema: true,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> moviesoutput"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/MoviesDS')]",
-				"[concat(variables('factoryId'), '/datasets/moviesdbDS')]",
-				"[concat(variables('factoryId'), '/datasets/moviesop')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/default')]",
-			"type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
-			"apiVersion": "2018-06-01",
-			"properties": {},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/df_agg_derive')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -616,53 +563,106 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipelineagg')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/df_join')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MoviesDS",
+								"type": "DatasetReference"
+							},
+							"name": "movies"
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_agg_derive",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"moviesv1": {},
-									"derive": {},
-									"agg": {}
-								}
+						{
+							"dataset": {
+								"referenceName": "moviesdbDS",
+								"type": "DatasetReference"
 							},
-							"staging": {},
-							"compute": {
-								"coreCount": 16,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+							"name": "moviesdb"
 						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "moviesop",
+								"type": "DatasetReference"
+							},
+							"name": "moviesoutput"
+						}
+					],
+					"transformations": [
+						{
+							"name": "moviesclean"
+						},
+						{
+							"name": "joinmoviesdb"
+						},
+						{
+							"name": "moviesdata2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          movieId as string,",
+						"          title as string,",
+						"          genres as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> movies",
+						"source(output(",
+						"          movie as string,",
+						"          title as string,",
+						"          genres as string,",
+						"          year as string,",
+						"          Rating as string,",
+						"          RottenTomato as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> moviesdb",
+						"movies derive(titlename = trim(toString(left(title,length(title)-6)))) ~> moviesclean",
+						"moviesclean, moviesdb join(titlename == moviesdb@title,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinmoviesdb",
+						"joinmoviesdb select(mapColumn(",
+						"          movieId,",
+						"          title = movies@title,",
+						"          genres = movies@genres,",
+						"          movie,",
+						"          genres = moviesdb@genres,",
+						"          year,",
+						"          Rating,",
+						"          RottenTomato",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> moviesdata2",
+						"moviesdata2 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> moviesoutput"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
-				"[concat(variables('factoryId'), '/dataflows/df_agg_derive')]"
+				"[concat(variables('factoryId'), '/datasets/MoviesDS')]",
+				"[concat(variables('factoryId'), '/datasets/moviesdbDS')]",
+				"[concat(variables('factoryId'), '/datasets/moviesop')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/default')]",
+			"type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+			"apiVersion": "2018-06-01",
+			"properties": {},
+			"dependsOn": []
 		}
 	]
 }
