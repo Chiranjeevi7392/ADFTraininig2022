@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "GenericCSV",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_BLOB_TRAINING229",
