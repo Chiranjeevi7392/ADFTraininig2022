@@ -1,0 +1,17 @@
+{
+	"name": "data_flow_agg_derive",
+	"properties": {
+		"description": "aggregator derive",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     parameter1 as string",
+				"}"
+			]
+		}
+	}
+}
