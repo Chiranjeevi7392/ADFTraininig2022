@@ -26,6 +26,15 @@
 				},
 				{
 					"name": "exist"
+				},
+				{
+					"name": "lookupCustomerID"
+				},
+				{
+					"name": "dateColumn"
+				},
+				{
+					"name": "alterRow1"
 				}
 			],
 			"scriptLines": [
@@ -67,7 +76,14 @@
 				"customersource derive(hashkey = sha2(256, iifNull(Title,'')+iifNull(FirstName,'')+iifNull(MiddleName,'')+iifNull(LastName,'')+iifNull(Suffix,'')+iifNull(CompanyName,'')+iifNull(SalesPerson,'')+iifNull(EmailAddress,'')+iifNull(Phone,''))) ~> createHashKey",
 				"createHashKey, dimCustomer exists(createHashKey@hashkey == dimCustomer@HashKey,",
 				"     negate:true,",
-				"     broadcast: 'auto')~> exist"
+				"     broadcast: 'auto')~> exist",
+				"exist, dimCustomer lookup(customersource@CustomerID == dimCustomer@CustomerID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupCustomerID",
+				"lookupCustomerID derive(inserted_Date = iif(isNull(InsertedDate), currentTimestamp(),InsertedDate),",
+				"          modifiedDate = currentTimestamp()) ~> dateColumn",
+				"dateColumn alterRow(upsertIf(true())) ~> alterRow1"
 			]
 		}
 	}
