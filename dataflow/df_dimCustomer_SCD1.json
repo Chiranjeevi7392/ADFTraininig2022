@@ -89,7 +89,7 @@
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookupCustomerID",
-				"lookupCustomerID derive(inserted_Date = iif(isNull(InsertedDate), currentTimestamp(),InsertedDate),",
+				"lookupCustomerID derive(InsertedDate = iif(isNull(InsertedDate), currentTimestamp(),InsertedDate),",
 				"          modifiedDate = currentTimestamp()) ~> dateColumn",
 				"dateColumn alterRow(upsertIf(true())) ~> alterRow1",
 				"alterRow1 sink(allowSchemaDrift: true,",
