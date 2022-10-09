@@ -19,7 +19,15 @@
 					"name": "dimCustomer"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dimCustomer",
+						"type": "DatasetReference"
+					},
+					"name": "Sinktarget"
+				}
+			],
 			"transformations": [
 				{
 					"name": "createHashKey"
@@ -83,7 +91,47 @@
 				"     broadcast: 'auto')~> lookupCustomerID",
 				"lookupCustomerID derive(inserted_Date = iif(isNull(InsertedDate), currentTimestamp(),InsertedDate),",
 				"          modifiedDate = currentTimestamp()) ~> dateColumn",
-				"dateColumn alterRow(upsertIf(true())) ~> alterRow1"
+				"dateColumn alterRow(upsertIf(true())) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerID as integer,",
+				"          Title as string,",
+				"          FirstName as string,",
+				"          MiddleName as string,",
+				"          LastName as string,",
+				"          Suffix as string,",
+				"          CompanyName as string,",
+				"          SalesPerson as string,",
+				"          EmailAddress as string,",
+				"          Phone as string,",
+				"          InsertedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          HashKey as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerID = customersource@CustomerID,",
+				"          Title = customersource@Title,",
+				"          FirstName = customersource@FirstName,",
+				"          MiddleName = customersource@MiddleName,",
+				"          LastName = customersource@LastName,",
+				"          Suffix = customersource@Suffix,",
+				"          CompanyName = customersource@CompanyName,",
+				"          SalesPerson = customersource@SalesPerson,",
+				"          EmailAddress = customersource@EmailAddress,",
+				"          Phone = customersource@Phone,",
+				"          InsertedDate,",
+				"          ModifiedDate = dateColumn@modifiedDate,",
+				"          HashKey = createHashKey@hashkey",
+				"     )) ~> Sinktarget"
 			]
 		}
 	}
